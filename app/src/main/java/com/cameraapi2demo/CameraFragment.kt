@@ -1,6 +1,5 @@
 package com.cameraapi2demo
 
-
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -25,14 +24,12 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_camera.view.*
 
-
 class CameraFragment : Fragment() {
-
 
     companion object{
 
         private val TAG = "CameraFragment"
-        @JvmField val PIC_FILE_NAME = "pic.jpg"
+        @JvmField val PIC_FILE_NAME = "${System.currentTimeMillis()}.png"
         private var sensorOrientation = 0
         private val MAX_PREVIEW_WIDTH = 1920
         private val MAX_PREVIEW_HEIGHT = 1080
@@ -231,7 +228,8 @@ class CameraFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        file = File(act!!.getExternalFilesDir(null), PIC_FILE_NAME)
+        val time = System.currentTimeMillis()
+        file = File(act!!.getExternalFilesDir(null), "$time.png")
     }
 
     override fun onResume() {
@@ -479,12 +477,10 @@ class CameraFragment : Fragment() {
                 // We have to take that into account and rotate JPEG properly.
                 // For devices with orientation of 90, we return our mapping from ORIENTATIONS.
                 // For devices with orientation of 270, we need to rotate the JPEG 180 degrees.
-                set(CaptureRequest.JPEG_ORIENTATION,
-                    (ORIENTATIONS.get(rotation) + sensorOrientation + 270) % 360)
+                set(CaptureRequest.JPEG_ORIENTATION, (ORIENTATIONS.get(rotation) + sensorOrientation + 270) % 360)
 
                 // Use the same AE and AF modes as the preview.
-                set(CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
             }?.also { setAutoFlash(it) }
 
             val captureCallback = object : CameraCaptureSession.CaptureCallback() {
@@ -493,6 +489,7 @@ class CameraFragment : Fragment() {
                                                 request: CaptureRequest,
                                                 result: TotalCaptureResult) {
                     act!!.showToast("Saved: $file")
+                    (act!! as MainActivity).viewPicPath(file.toString())
                     Log.d(TAG, file.toString())
                     unlockFocus()
                 }
@@ -506,7 +503,6 @@ class CameraFragment : Fragment() {
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
         }
-
     }
 
     private fun configureTransform(viewWidth: Int, viewHeight: Int) {
@@ -603,7 +599,7 @@ class CameraFragment : Fragment() {
             state = STATE_WAITING_LOCK
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
                 backgroundHandler)
-        } catch (e: CameraAccessException) {
+        } catch (e: Exception) {
             Log.e(TAG, e.toString())
         }
 

@@ -17,8 +17,21 @@ class MainActivity : AppCompatActivity() {
 
     fun openCamera(){
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, CameraFragment.newInstance())
+            .add(R.id.container, CameraFragment.newInstance())
             .commit()
     }
-    
+
+    fun viewPicPath(path: String){
+
+        val fragment = BlankFragment.newInstance()
+
+        val mBundle = Bundle()
+        mBundle.putString("path", path)
+        fragment.arguments = mBundle
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, fragment)
+            .commit()
+    }
+
 }
